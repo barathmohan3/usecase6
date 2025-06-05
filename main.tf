@@ -2,38 +2,60 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-resource "aws_instance" "demo_instance" {
-  ami                    = "ami-058a8a5ab36292159"  
-  instance_type          = "t2.micro"
-  associate_public_ip_address = true
+resource "aws_subnet" "subnet_a" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+  map_public_ip_on_launch = true
+  tags = { Name = "subnet-a" }
+}
 
-  # Use default subnet
-  subnet_id = data.aws_subnet.default_subnet.id
+resource "aws_security_group" "allow_http_ssh" {
+  name        = "allow_http_ssh"
+  description = "Allow HTTP and SSH"
+  vpc_id      = aws_vpc.main.id
 
-  # Use default security group (or create a simple one)
-  vpc_security_group_ids = [data.aws_security_group.default_sg.id]
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  tags = {
-    Name = "DemoEC2Instance"
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-data "aws_subnet" "default_subnet" {
-  default_for_az = true
-  availability_zone = "eu-west-1a"
+
+
+resource "aws_instance" "instance_a" {
+  ami                         = ami-03400c3b73b5086e9
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.subnet_a.id
+  vpc_security_group_ids      = [aws_security_group.allow_http_ssh.id]
+  associate_public_ip_address = true
+
+  tags = { Name = "Instance A" }
+
+  user_data =<<-EOF
+              #!/bin/bash
+              yum install -y nginx
+              systemctl enable nginx
+              systemctl start nginx
+              echo '<h1>Home page!</h1><br><h2>(Instance A)</br></h2>' > /usr/share/nginx/html/index.html
+              EOF
 }
-
-data "aws_security_group" "default_sg" {
-  name   = "default"
-  vpc_id = data.aws_vpc.default.id
-}
-
-data "aws_vpc" "default" {
-  default = true
-}
-
-
-
 
 module "iam" {
   source           = "./modules/iam_role"
