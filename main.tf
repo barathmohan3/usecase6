@@ -2,6 +2,39 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+resource "aws_instance" "demo_instance" {
+  ami                    = "ami-0c55b159cbfafe1f0"  # Amazon Linux 2 AMI (eu-west-1)
+  instance_type          = "t2.micro"
+  associate_public_ip_address = true
+
+  # Use default subnet
+  subnet_id = data.aws_subnet.default_subnet.id
+
+  # Use default security group (or create a simple one)
+  vpc_security_group_ids = [data.aws_security_group.default_sg.id]
+
+  tags = {
+    Name = "DemoEC2Instance"
+  }
+}
+
+data "aws_subnet" "default_subnet" {
+  default_for_az = true
+  availability_zone = "eu-west-1a"
+}
+
+data "aws_security_group" "default_sg" {
+  name   = "default"
+  vpc_id = data.aws_vpc.default.id
+}
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+
+
+
 module "iam" {
   source           = "./modules/iam_role"
   lambda_role_name = "ec2-fghj-role"
