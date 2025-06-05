@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "demo_instance" {
-  ami                    = "ami-0c55b159cbfafe1f0"  # Amazon Linux 2 AMI (eu-west-1)
+  ami                    = "ami-058a8a5ab36292159"  
   instance_type          = "t2.micro"
   associate_public_ip_address = true
 
