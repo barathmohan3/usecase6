@@ -14,7 +14,7 @@ module "start_lambda" {
   handler_name     = "start_lambda.lambda_handler"
   role_arn         = module.iam.lambda_role_arn
   environment_vars = {
-    INSTANCE_IDS = "i-0169a79a8eb7421ef"
+    INSTANCE_IDS = "i-09bcc5d73a5c2293b"
   }
 }
 
@@ -25,20 +25,20 @@ module "stop_lambda" {
   handler_name     = "stop_lambda.lambda_handler"
   role_arn         = module.iam.lambda_role_arn
   environment_vars = {
-    INSTANCE_IDS = "i-0169a79a8eb7421ef"
+    INSTANCE_IDS = "i-09bcc5d73a5c2293b"
   }
 }
 
 module "start_schedule" {
   source              = "./modules/cloudwatch_event"
   rule_name           = "StartEC2InstancesRule"
-  schedule_expr       = "cron(0 18 ? * MON-FRI *)" 
+  schedule_expr       = "cron(35 5 ? * MON-FRI *)" 
   lambda_function_arn = module.start_lambda.lambda_role_arn
 }
 
 module "stop_schedule" {
   source              = "./modules/cloudwatch_event"
   rule_name           = "StopEC2InstancesRule"
-  schedule_expr       =  "cron(0 18 ? * MON-FRI *)" 
+  schedule_expr       =  "cron(38 5 ? * MON-FRI *)" 
   lambda_function_arn = module.stop_lambda.lambda_role_arn
 }
