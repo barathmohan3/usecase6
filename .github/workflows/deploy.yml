@@ -51,6 +51,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::650251701672:role/s3-github
+          aws-region: us-east-2
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -84,6 +90,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::650251701672:role/s3-github
+          aws-region: us-east-2
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -91,12 +103,6 @@ jobs:
       
       - name: Terraform Init
         run: terraform init
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::650251701672:role/s3-github
-          aws-region: us-east-2
 
       - name: Terraform Apply or Destroy
         run: |
