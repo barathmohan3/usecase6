@@ -2,6 +2,11 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+module "iam" {
+  source           = "./modules/iam_role"
+  lambda_role_name = "ec2-fghj-role"
+}
+
 module "start_lambda" {
   source           = "./modules/lambda_function"
   function_name    = "StartEC2Instances"
