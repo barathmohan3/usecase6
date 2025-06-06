@@ -12,6 +12,8 @@ on:
           - apply
           - destroy
 
+  pull_request:
+
 permissions:
   id-token: write
   contents: write
@@ -62,10 +64,8 @@ jobs:
         with:
           terraform_version: 1.10.5
 
-
       - name: Terraform Init
         run: terraform init
-
 
       - name: Terraform validate
         run: terraform validate
@@ -110,7 +110,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.10.5
-      
+
       - name: Terraform Init
         run: terraform init
 
@@ -120,4 +120,23 @@ jobs:
             terraform destroy -auto-approve
           else
             terraform apply -auto-approve
-          fi      
+          fi
+
+  docs:
+    name: Render Terraform Docs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Render terraform docs and push changes back to PR
+        uses: terraform-docs/gh-actions@v1.1.0
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          git-push: true
