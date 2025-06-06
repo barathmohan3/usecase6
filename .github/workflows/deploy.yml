@@ -17,8 +17,8 @@ permissions:
   contents: write
 
 jobs:
-  provision:
-    name: Terraform Infra via EC2
+  init:
+    name: Terraform Init
     runs-on: ubuntu-latest
 
     steps:
@@ -42,19 +42,53 @@ jobs:
       - name: Terraform init
         run: terraform init
 
+  test:
+    name: Terraform Validate & Checkov
+    runs-on: ubuntu-latest
+    needs: init
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      - name: Terraform validate
+        run: terraform validate
+
       - name: Install Checkov
         run: |
           python3 -m pip install --upgrade pip
-          pip install checkov 
-
-      - name: Terraform Validate
-        run: terraform validate
+          pip install checkov
 
       - name: Run Checkov Scan
-        run: checkov -d ./ --skip-path .github/* --soft-fail  
+        run: checkov -d ./ --skip-path .github/* --soft-fail
 
       - name: Terraform plan
         run: terraform plan
+
+  deploy:
+    name: Terraform Apply or Destroy
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::650251701672:role/s3-github
+          aws-region: us-east-2
 
       - name: Terraform Apply or Destroy
         run: |
